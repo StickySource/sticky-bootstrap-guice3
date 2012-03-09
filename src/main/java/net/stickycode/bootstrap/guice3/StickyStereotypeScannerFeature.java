@@ -102,26 +102,28 @@ public class StickyStereotypeScannerFeature
   @Override
   @SuppressWarnings("unchecked")
   public void process(Class<Object> annotatedClass, Map<String, Annotation> annotations) {
-    Class<Object>[] interfaces = (Class<Object>[]) annotatedClass.getInterfaces();
-
-    if (interfaces.length == 0) {
-      List<Class<?>> interfaceCollection = new ArrayList<Class<?>>();
-      Class<? super Object> parent = annotatedClass.getSuperclass();
-      while (parent != null && !parent.equals(Object.class)) {
-        Collections.addAll(interfaceCollection, parent.getInterfaces());
-        parent = parent.getSuperclass();
-      }
-      interfaces = interfaceCollection.toArray(new Class[interfaceCollection.size()]);
+    List<Class<?>> interfaces = new ArrayList<Class<?>>();
+    processInterface(annotatedClass, interfaces);
+    
+    for (Class<?> parent = annotatedClass.getSuperclass(); parent != null; parent = parent.getSuperclass()) {
+      processInterface(annotatedClass, interfaces);
     }
 
     bind(annotatedClass, null, Scopes.SINGLETON);
 
-    for (Class<Object> interf : interfaces) {
+    for (Class<?> interf : interfaces) {
       if (interf.isAssignableFrom(TypeListener.class))
         bindListener(annotatedClass);
       else
         if (!interf.isAssignableFrom(MembersInjector.class))
-          bind(annotatedClass, interf, (Annotation) null, Scopes.SINGLETON);
+          bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
+    }
+  }
+
+  private void processInterface(Class<?> target, List<Class<?>> interfaces) {
+    for (Class<?> class1 : target.getInterfaces()) {
+      interfaces.add(class1);
+      processInterface(class1, interfaces);
     }
   }
 
