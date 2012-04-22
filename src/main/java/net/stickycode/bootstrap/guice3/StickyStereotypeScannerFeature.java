@@ -13,14 +13,16 @@
 package net.stickycode.bootstrap.guice3;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import net.stickycode.metadata.MetadataResolverRegistry;
+import net.stickycode.reflector.Methods;
 import net.stickycode.stereotype.StickyComponent;
 import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.component.StickyRepository;
@@ -29,12 +31,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.MembersInjector;
+import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.TypeListener;
 
 import de.devsurf.injection.guice.install.InstallationContext.BindingStage;
+import de.devsurf.injection.guice.install.bindjob.BindingJob;
 import de.devsurf.injection.guice.scanner.features.BindingScannerFeature;
 
 @Singleton
@@ -59,25 +65,6 @@ public class StickyStereotypeScannerFeature
 
   protected boolean isFrameworkComponent(Class<Object> annotatedClass) {
     return metadataResolver.is(annotatedClass).metaAnnotatedWith(StickyFramework.class);
-    // if (annotatedClass.isAnnotationPresent(StickyFramework.class))
-    // return true;
-    //
-    // for (Class<?> type = annotatedClass; type != null; type = type.getSuperclass())
-    // for (Class<?> contract : type.getInterfaces()) {
-    // if (contract.isAnnotationPresent(StickyFramework.class))
-    // return true;
-    //
-    // if (contract.isAssignableFrom(MembersInjector.class))
-    // return true;
-    //
-    // if (contract.isAssignableFrom(TypeListener.class))
-    // return true;
-    //
-    // if (contract.isAssignableFrom(InjectionListener.class))
-    // return true;
-    // }
-    //
-    // return false;
   }
 
   protected Class<? extends Annotation> getComponentAnnotation() {
@@ -102,12 +89,7 @@ public class StickyStereotypeScannerFeature
   @Override
   @SuppressWarnings("unchecked")
   public void process(Class<Object> annotatedClass, Map<String, Annotation> annotations) {
-    List<Class<?>> interfaces = new ArrayList<Class<?>>();
-    processInterface(annotatedClass, interfaces);
-    
-    for (Class<?> parent = annotatedClass.getSuperclass(); parent != null; parent = parent.getSuperclass()) {
-      processInterface(annotatedClass, interfaces);
-    }
+    List<Class<?>> interfaces = collectInterfaces(annotatedClass);
 
     bind(annotatedClass, null, Scopes.SINGLETON);
 
@@ -116,7 +98,40 @@ public class StickyStereotypeScannerFeature
         bindListener(annotatedClass);
       else
         if (!interf.isAssignableFrom(MembersInjector.class))
-          bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
+          if (Provider.class.isAssignableFrom(interf))
+            bindProvider((Class<? extends Provider>) annotatedClass, null);
+          else
+            bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
+    }
+  }
+
+  private List<Class<?>> collectInterfaces(Class<Object> annotatedClass) {
+    List<Class<?>> interfaces = new ArrayList<Class<?>>();
+    for (Class<?> class1 : annotatedClass.getInterfaces()) {
+      interfaces.add(class1);
+      processInterface(class1, interfaces);
+    }
+    log.debug("found {} with {}", annotatedClass, interfaces);
+    return interfaces;
+  }
+
+  private <Y, T extends Provider<Y>> void bindProvider(Class<T> providerClass, Scope scope) {
+    BindingJob job = new ProviderClassBindingJob(scope, providerClass.getName());
+    if (!tracer.contains(job)) {
+      synchronized (_binder) {
+        Method m = Methods.find(providerClass, "get");
+        // ParameterizedType t = Types.providerOf();
+        TypeLiteral<T> tl = (TypeLiteral<T>) TypeLiteral.get(providerClass);
+        ScopedBindingBuilder scopedBuilder = _binder.bind((Class<Y>) m.getReturnType())
+            .toProvider(tl);
+        if (scope != null) {
+          scopedBuilder.in(scope);
+        }
+      }
+      tracer.add(job);
+    }
+    else {
+      log.info("ignoring {}", job);
     }
   }
 

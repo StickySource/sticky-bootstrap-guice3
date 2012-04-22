@@ -30,6 +30,14 @@ public class StickyGuice {
            
   }
 
+  static public Injector createApplicationInjector(String... packages) {
+    PackageFilter[] packageFilters = createFilters(packages);
+    return Guice.createInjector(
+        bootstrapModule(packageFilters),
+        keyBuilderModule())
+        .createChildInjector(StickyModule.applicationModule(packageFilters));
+
+  }
   private static PackageFilter[] createFilters(String[] packages) {
     PackageFilter[] filters = new PackageFilter[packages.length + 1];
     filters[0] = PackageFilter.create("net.stickycode");
