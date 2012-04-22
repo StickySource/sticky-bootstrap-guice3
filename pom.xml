@@ -10,7 +10,7 @@
 
 	<groupId>net.stickycode.bootstrap</groupId>
 	<artifactId>sticky-bootstrap-guice3</artifactId>
-	<version>1.2</version>
+	<version>1.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>sticky-bootstrap-guice3</name>
@@ -19,9 +19,9 @@
 	<url>http://www.StickyCode.net/bootstrap/sticky-bootstrap-guice3/</url>
 
 	<scm>
-		<connection>scm:svn:http://source.stickycode.net/tags/net.stickycode.bootstrap/sticky-bootstrap-guice3-1.2</connection>
-		<developerConnection>scm:svn:http://source.stickycode.net/tags/net.stickycode.bootstrap/sticky-bootstrap-guice3-1.2</developerConnection>
-		<url>scm:svn:http://source.stickycode.net/tags/net.stickycode.bootstrap/sticky-bootstrap-guice3-1.2</url>
+		<connection>scm:svn:http://stickycode.googlecode.com/svn/trunk/net.stickycode.bootstrap/sticky-bootstrap-guice3</connection>
+		<developerConnection>scm:svn:https://stickycode.googlecode.com/svn/trunk/net.stickycode.bootstrap/sticky-bootstrap-guice3</developerConnection>
+		<url>http://code.google.com/p/stickycode/source/browse/#svn/trunk/net.stickycode.bootstrap/sticky-bootstrap-guice3</url>
 	</scm>
 
 	<dependencies>
