@@ -99,10 +99,20 @@ public class StickyStereotypeScannerFeature
       else
         if (!interf.isAssignableFrom(MembersInjector.class))
           if (Provider.class.isAssignableFrom(interf))
-            bindProvider((Class<? extends Provider>) annotatedClass, null);
+            bindProviderWorkaround((Class<Object>) annotatedClass, null);
           else
             bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
     }
+  }
+
+  /**
+   * This nasty code is to workaround the bug fixed by  (NOTE its says closed but its not fixed yet) in javac. Without these casts
+   * javac will fail while ecj will be fine.
+   */
+  private void bindProviderWorkaround(Class<Object> annotatedClass, Object object) {
+    Class<Object> annotatedClass2 = annotatedClass;
+    if (annotatedClass2 instanceof Class)
+      bindProvider((Class<? extends Provider<Object>>)(Object) annotatedClass2, null);
   }
 
   private List<Class<?>> collectInterfaces(Class<Object> annotatedClass) {
