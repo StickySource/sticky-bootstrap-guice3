@@ -99,7 +99,7 @@ public class StickyStereotypeScannerFeature
       else
         if (!interf.isAssignableFrom(MembersInjector.class))
           if (Provider.class.isAssignableFrom(interf))
-            bindProviderWorkaround((Class<Object>) annotatedClass, null);
+            bindProviderWorkaround((Class<Object>) annotatedClass, Scopes.NO_SCOPE);
           else
             bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
     }

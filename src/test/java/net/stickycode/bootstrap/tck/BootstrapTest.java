@@ -1,5 +1,7 @@
 package net.stickycode.bootstrap.tck;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.inject.Inject;
 
 import net.stickycode.bootstrap.guice3.StickyGuice;
@@ -17,6 +19,14 @@ public class BootstrapTest {
   public void verify() {
     Injector injector = StickyGuice.createApplicationInjector(getClass().getPackage().getName());
     injector.injectMembers(this);
+    
+    assertThat(depender.subInterface).isSameAs(depender.superInterface);
+    
+    // even though the provider has not scope its the same at each injection point
+    // seems counter intuitive, I would expect a provider to be singleton scoped
+    // in order to be the same at all injection points
+    assertThat(depender.provider.get()).isNotSameAs(depender.provider.get());
+    assertThat(depender.provider).isSameAs(depender.provider);
   }
 
 }

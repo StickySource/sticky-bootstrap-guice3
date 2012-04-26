@@ -27,4 +27,7 @@ public class Depender {
   
   @Inject
   SixUp sixUp;
+  
+  @Inject
+  SomethingProvider provider;
 }
