@@ -23,6 +23,7 @@ import javax.inject.Provider;
 
 import net.stickycode.metadata.MetadataResolverRegistry;
 import net.stickycode.reflector.Methods;
+import net.stickycode.stereotype.ConfiguredComponent;
 import net.stickycode.stereotype.StickyComponent;
 import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.component.StickyRepository;
@@ -91,7 +92,9 @@ public class StickyStereotypeScannerFeature
   public void process(Class<Object> annotatedClass, Map<String, Annotation> annotations) {
     List<Class<?>> interfaces = collectInterfaces(annotatedClass);
 
-    bind(annotatedClass, null, Scopes.SINGLETON);
+    Scope scope = deriveScope(interfaces);
+    
+    bind(annotatedClass, null, scope);
 
     for (Class<?> interf : interfaces) {
       if (interf.isAssignableFrom(TypeListener.class))
@@ -101,18 +104,26 @@ public class StickyStereotypeScannerFeature
           if (Provider.class.isAssignableFrom(interf))
             bindProviderWorkaround((Class<Object>) annotatedClass, Scopes.NO_SCOPE);
           else
-            bind(annotatedClass, (Class<Object>) interf, (Annotation) null, Scopes.SINGLETON);
+            bind(annotatedClass, (Class<Object>) interf, (Annotation) null, scope);
     }
   }
 
+  private Scope deriveScope(List<Class<?>> interfaces) {
+    for (Class<?> contract : interfaces) {
+      if (metadataResolver.is(contract).metaAnnotatedWith(ConfiguredComponent.class))
+        return Scopes.NO_SCOPE;
+    }
+    return Scopes.SINGLETON;
+  }
+
   /**
-   * This nasty code is to workaround the bug fixed by  (NOTE its says closed but its not fixed yet) in javac. Without these casts
+   * This nasty code is to workaround the bug fixed by (NOTE its says closed but its not fixed yet) in javac. Without these casts
    * javac will fail while ecj will be fine.
    */
   private void bindProviderWorkaround(Class<Object> annotatedClass, Object object) {
     Class<Object> annotatedClass2 = annotatedClass;
     if (annotatedClass2 instanceof Class)
-      bindProvider((Class<? extends Provider<Object>>)(Object) annotatedClass2, null);
+      bindProvider((Class<? extends Provider<Object>>) (Object) annotatedClass2, null);
   }
 
   private List<Class<?>> collectInterfaces(Class<Object> annotatedClass) {

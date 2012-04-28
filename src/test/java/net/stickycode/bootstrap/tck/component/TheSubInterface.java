@@ -1,4 +1,4 @@
-package net.stickycode.bootstrap.tck;
+package net.stickycode.bootstrap.tck.component;
 
 import net.stickycode.stereotype.StickyComponent;
 

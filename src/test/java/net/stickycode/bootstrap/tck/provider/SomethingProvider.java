@@ -1,4 +1,4 @@
-package net.stickycode.bootstrap.tck;
+package net.stickycode.bootstrap.tck.provider;
 
 import javax.inject.Provider;
 
