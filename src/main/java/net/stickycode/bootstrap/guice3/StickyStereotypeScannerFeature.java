@@ -14,6 +14,8 @@ package net.stickycode.bootstrap.guice3;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +95,7 @@ public class StickyStereotypeScannerFeature
     List<Class<?>> interfaces = collectInterfaces(annotatedClass);
 
     Scope scope = deriveScope(interfaces);
-    
+
     bind(annotatedClass, null, scope);
 
     for (Class<?> interf : interfaces) {
@@ -106,6 +108,20 @@ public class StickyStereotypeScannerFeature
           else
             bind(annotatedClass, (Class<Object>) interf, (Annotation) null, scope);
     }
+
+    if (!Provider.class.isAssignableFrom(annotatedClass) && !MembersInjector.class.isAssignableFrom(annotatedClass))
+      for (Class<?> blah = annotatedClass; blah != null; blah = blah.getSuperclass())
+        for (Type type : blah.getGenericInterfaces()) {
+          if (type instanceof ParameterizedType) {
+            bindParameterizedType(annotatedClass, type);
+          }
+        }
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  protected void bindParameterizedType(Class<?> annotatedClass, Type type) {
+    TypeLiteral literal = TypeLiteral.get(type);
+    _binder.bind(literal).to(annotatedClass);
   }
 
   private Scope deriveScope(List<Class<?>> interfaces) {
@@ -128,10 +144,12 @@ public class StickyStereotypeScannerFeature
 
   private List<Class<?>> collectInterfaces(Class<Object> annotatedClass) {
     List<Class<?>> interfaces = new ArrayList<Class<?>>();
-    for (Class<?> class1 : annotatedClass.getInterfaces()) {
-      interfaces.add(class1);
-      processInterface(class1, interfaces);
-    }
+    for (Class<?> base = annotatedClass; base != null; base = base.getSuperclass())
+      for (Class<?> class1 : base.getInterfaces()) {
+        interfaces.add(class1);
+        processInterface(class1, interfaces);
+      }
+    
     log.debug("found {} with {}", annotatedClass, interfaces);
     return interfaces;
   }

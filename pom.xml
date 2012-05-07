@@ -56,4 +56,33 @@
 			<version>[1.3,2)</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<!-- Make sure eclipse outputs to a different directory otherwise the builders will clash with command line. -->
+			<id>running-java7-in-eclipse</id>
+			<!-- 
+			<activation>
+				<property>
+					<name>m2e.version</name>
+				</property>
+			</activation>
+			 -->
+			<build>
+				<pluginManagement>
+					<plugins>
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.7</source>
+							<target>1.7</target>
+							<testSource>1.7</testSource>
+							<testTarget>1.7</testTarget>
+						</configuration>
+					</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
 </project>

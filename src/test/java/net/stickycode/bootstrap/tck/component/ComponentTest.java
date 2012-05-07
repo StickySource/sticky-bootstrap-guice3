@@ -25,7 +25,10 @@ public class ComponentTest
 
   @Inject
   SubInterface contractTwo;
-
+  
+  @Inject
+  UpTheTop upTop;
+  
   @Test
   public void implementationAndContractAreTheSameInstance() {
     assertThat(implementation).isSameAs(contract);
