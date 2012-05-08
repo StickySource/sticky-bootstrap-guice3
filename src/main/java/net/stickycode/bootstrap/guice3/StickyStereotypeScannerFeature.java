@@ -120,8 +120,8 @@ public class StickyStereotypeScannerFeature
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   protected void bindParameterizedType(Class<?> annotatedClass, Type type) {
-    TypeLiteral literal = TypeLiteral.get(type);
-    _binder.bind(literal).to(annotatedClass);
+    // if the type is parameterised and not multibound then there will only be one instance, 
+    // so there is no need to bind to the generic interface
   }
 
   private Scope deriveScope(List<Class<?>> interfaces) {
