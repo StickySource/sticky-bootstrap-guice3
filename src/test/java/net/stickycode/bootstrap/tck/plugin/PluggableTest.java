@@ -10,7 +10,6 @@ import net.stickycode.bootstrap.tck.AbstractBootstrapTest;
 
 import org.junit.Test;
 
-import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.util.Types;
@@ -27,6 +26,7 @@ public class PluggableTest
   @Inject
   Set<GenericPluggable<?>> genericPlugged;
 
+  @SuppressWarnings("rawtypes")
   @Inject
   Set<GenericPluggable> genericPluggedNoWildcard;
 
@@ -39,6 +39,6 @@ public class PluggableTest
     assertThat(genericPluggedNoWildcard).hasSize(3);
     assertThat(genericPlugged).hasSize(3);
 
-    Binding bindig = injector.getBinding(Key.get(Types.setOf(PluggableContract.class)));
+    injector.getBinding(Key.get(Types.setOf(PluggableContract.class)));
   }
 }

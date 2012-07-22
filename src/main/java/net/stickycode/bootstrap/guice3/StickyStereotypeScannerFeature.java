@@ -25,7 +25,6 @@ import javax.inject.Provider;
 
 import net.stickycode.metadata.MetadataResolverRegistry;
 import net.stickycode.reflector.Methods;
-import net.stickycode.stereotype.ConfiguredComponent;
 import net.stickycode.stereotype.StickyComponent;
 import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.component.StickyRepository;
@@ -118,17 +117,16 @@ public class StickyStereotypeScannerFeature
         }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   protected void bindParameterizedType(Class<?> annotatedClass, Type type) {
     // if the type is parameterised and not multibound then there will only be one instance, 
     // so there is no need to bind to the generic interface
   }
 
   private Scope deriveScope(List<Class<?>> interfaces) {
-    for (Class<?> contract : interfaces) {
-      if (metadataResolver.is(contract).metaAnnotatedWith(ConfiguredComponent.class))
-        return Scopes.NO_SCOPE;
-    }
+//    for (Class<?> contract : interfaces) {
+//      if (metadataResolver.is(contract).metaAnnotatedWith(ConfiguredComponent.class))
+//        return Scopes.NO_SCOPE;
+//    }
     return Scopes.SINGLETON;
   }
 
@@ -136,6 +134,7 @@ public class StickyStereotypeScannerFeature
    * This nasty code is to workaround the bug fixed by (NOTE its says closed but its not fixed yet) in javac. Without these casts
    * javac will fail while ecj will be fine.
    */
+  @SuppressWarnings("unchecked")
   private void bindProviderWorkaround(Class<Object> annotatedClass, Object object) {
     Class<Object> annotatedClass2 = annotatedClass;
     if (annotatedClass2 instanceof Class)
@@ -161,6 +160,7 @@ public class StickyStereotypeScannerFeature
         Method m = Methods.find(providerClass, "get");
         // ParameterizedType t = Types.providerOf();
         TypeLiteral<T> tl = (TypeLiteral<T>) TypeLiteral.get(providerClass);
+        @SuppressWarnings("unchecked")
         ScopedBindingBuilder scopedBuilder = _binder.bind((Class<Y>) m.getReturnType())
             .toProvider(tl);
         if (scope != null) {
