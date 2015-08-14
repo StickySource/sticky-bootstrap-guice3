@@ -36,17 +36,17 @@ public class StickyModule extends StartupModule {
       util.removeHandler(handler);
     SLF4JBridgeHandler.install();
   }
-  
-  static public Module bootstrapModule(PackageFilter... packageFilter) {
-    return new StickyModule(StickyClasspathScanner.class, packageFilter)
+
+  static public Module bootstrapModule() {
+    return new StickyModule(StickyClasspathScanner.class, PackageFilter.create("net.stickycode"))
         .addFeature(StickyFrameworkPluginMultibindingFeature.class)
         .addFeature(StickyFrameworkStereotypeScannerFeature.class)
         .disableStartupConfiguration();
   }
 
-  static public Module applicationModule(PackageFilter... packageFilter) {
-    return 
-        new StickyModule(StickyClasspathScanner.class, packageFilter)
+  static public Module applicationModule(String... packageFilter) {
+    return
+        new StickyModule(StickyClasspathScanner.class, createFilters(packageFilter))
         .addFeature(StickyPluginMultibindingFeature.class)
         .addFeature(StickyStereotypeScannerFeature.class)
         .disableStartupConfiguration();
@@ -74,10 +74,22 @@ public class StickyModule extends StartupModule {
     for (Class<? extends ScannerFeature> listener : _features) {
       listeners.addBinding().to(listener);
     }
-    
+
     binder.bind(MetadataResolverRegistry.class).to(ReflectiveMetadataResolverRegistry.class);
 
     return listeners;
+  }
+
+  /**
+   * Always scan net.stickycode first
+   */
+  private static PackageFilter[] createFilters(String[] packages) {
+    PackageFilter[] filters = new PackageFilter[packages.length + 1];
+    filters[0] = PackageFilter.create("net.stickycode");
+    for (int i = 1; i < filters.length; i++) {
+      filters[i] = PackageFilter.create(packages[i - 1]);
+    }
+    return filters;
   }
 
 }
