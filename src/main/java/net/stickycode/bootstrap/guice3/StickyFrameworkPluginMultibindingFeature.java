@@ -39,8 +39,8 @@ public class StickyFrameworkPluginMultibindingFeature
   }
 
   @Override
-  protected Class<? extends Annotation> getComponentAnnotation() {
-    return StickyPlugin.class;
+  protected Class<? extends Annotation>[] getComponentAnnotations() {
+    return new Class[] { StickyPlugin.class };
   }
 
   @Override
@@ -70,7 +70,7 @@ public class StickyFrameworkPluginMultibindingFeature
     else {
       log.debug("Ignoring Multi-BindingJob \"" + job.toString()
           + "\", because it was already bound.", new Exception("Ignoring Multi-BindingJob \"" + job.toString()
-          + "\", because it was already bound."));
+              + "\", because it was already bound."));
       log.info("Ignoring Multi-BindingJob \"" + job.toString()
           + "\", because it was already bound.");
     }

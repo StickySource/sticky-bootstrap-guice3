@@ -26,6 +26,7 @@ import javax.inject.Provider;
 import net.stickycode.metadata.MetadataResolverRegistry;
 import net.stickycode.reflector.Methods;
 import net.stickycode.stereotype.StickyComponent;
+import net.stickycode.stereotype.StickyDomain;
 import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.component.StickyRepository;
 
@@ -59,8 +60,9 @@ public class StickyStereotypeScannerFeature
     if (isFrameworkComponent(annotatedClass))
       return BindingStage.IGNORE;
 
-    if (metadataResolver.is(annotatedClass).metaAnnotatedWith(getComponentAnnotation()))
-      return deriveStage(annotatedClass);
+    for (Class<? extends Annotation> componentAnnotation : getComponentAnnotations())
+      if (metadataResolver.is(annotatedClass).metaAnnotatedWith(componentAnnotation))
+        return deriveStage(annotatedClass);
 
     return BindingStage.IGNORE;
   }
@@ -69,8 +71,8 @@ public class StickyStereotypeScannerFeature
     return metadataResolver.is(annotatedClass).metaAnnotatedWith(StickyFramework.class);
   }
 
-  protected Class<? extends Annotation> getComponentAnnotation() {
-    return StickyComponent.class;
+  protected Class<? extends Annotation>[] getComponentAnnotations() {
+    return new Class[] { StickyComponent.class, StickyDomain.class };
   }
 
   protected BindingStage deriveStage(Class<Object> annotatedClass) {
@@ -93,7 +95,7 @@ public class StickyStereotypeScannerFeature
   public void process(Class<Object> annotatedClass, Map<String, Annotation> annotations) {
     List<Class<?>> interfaces = collectInterfaces(annotatedClass);
 
-    Scope scope = deriveScope(interfaces);
+    Scope scope = deriveScope(annotatedClass, interfaces);
 
     bind(annotatedClass, null, scope);
 
@@ -118,15 +120,13 @@ public class StickyStereotypeScannerFeature
   }
 
   protected void bindParameterizedType(Class<?> annotatedClass, Type type) {
-    // if the type is parameterised and not multibound then there will only be one instance, 
+    // if the type is parameterised and not multibound then there will only be one instance,
     // so there is no need to bind to the generic interface
   }
 
-  private Scope deriveScope(List<Class<?>> interfaces) {
-//    for (Class<?> contract : interfaces) {
-//      if (metadataResolver.is(contract).metaAnnotatedWith(ConfiguredComponent.class))
-//        return Scopes.NO_SCOPE;
-//    }
+  private Scope deriveScope(Class<Object> annotatedClass, List<Class<?>> interfaces) {
+    if (metadataResolver.is(annotatedClass).metaAnnotatedWith(StickyDomain.class))
+      return Scopes.NO_SCOPE;
     return Scopes.SINGLETON;
   }
 
@@ -148,7 +148,7 @@ public class StickyStereotypeScannerFeature
         interfaces.add(class1);
         processInterface(class1, interfaces);
       }
-    
+
     log.debug("found {} with {}", annotatedClass, interfaces);
     return interfaces;
   }
