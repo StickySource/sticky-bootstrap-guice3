@@ -11,7 +11,7 @@
 
 	<groupId>net.stickycode.bootstrap</groupId>
 	<artifactId>sticky-bootstrap-guice3</artifactId>
-	<version>3.5-SNAPSHOT</version>
+	<version>3.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>sticky-bootstrap-guice3-3</name>
@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>net.stickycode.bootstrap</groupId>
 			<artifactId>sticky-bootstrap-tck</artifactId>
-			<version>[1.4,2)</version>
+			<version>[1.5,2)</version>
 			<scope>test</scope>
 		</dependency>
 
