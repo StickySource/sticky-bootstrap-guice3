@@ -25,9 +25,9 @@ public class StickyGuice {
   static public Injector createInjector(String... packages) {
     PackageFilter[] packageFilters = createFilters(packages);
     return Guice.createInjector(
-              bootstrapModule(packageFilters),
-              keyBuilderModule());
-           
+        bootstrapModule(packageFilters),
+        keyBuilderModule());
+
   }
 
   static public Injector createApplicationInjector(String... packages) {
@@ -38,6 +38,7 @@ public class StickyGuice {
         .createChildInjector(StickyModule.applicationModule(packageFilters));
 
   }
+
   private static PackageFilter[] createFilters(String[] packages) {
     PackageFilter[] filters = new PackageFilter[packages.length + 1];
     filters[0] = PackageFilter.create("net.stickycode");
@@ -47,4 +48,8 @@ public class StickyGuice {
     return filters;
   }
 
+  public static Injector createInjector(Injector injector, String... packages) {
+    return injector
+        .createChildInjector(StickyModule.applicationModule(createFilters(packages)));
+  }
 }
