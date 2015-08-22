@@ -16,7 +16,6 @@ import net.stickycode.bootstrap.BeanNotFoundFailure;
 import net.stickycode.bootstrap.ComponentContainer;
 import net.stickycode.stereotype.StickyComponent;
 
-@StickyComponent
 public class Guice3ComponentContainer
     implements ComponentContainer {
 
