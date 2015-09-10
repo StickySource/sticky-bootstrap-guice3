@@ -10,20 +10,29 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package net.stickycode.guice3.jsr250;
+package net.stickycode.bootstrap.guice3.jsr250;
 
-import net.stickycode.reflector.Reflector;
+import java.lang.reflect.Method;
 
-import com.google.inject.spi.InjectionListener;
+import javax.annotation.PostConstruct;
 
-public class PostConstructInjectionListener
-    implements InjectionListener<Object> {
+import net.stickycode.stereotype.StickyComponent;
+import net.stickycode.stereotype.StickyFramework;
+
+import com.google.inject.TypeLiteral;
+import com.google.inject.spi.TypeEncounter;
+import com.google.inject.spi.TypeListener;
+
+@StickyComponent
+@StickyFramework
+public class Jsr250TypeListener
+    implements TypeListener {
 
   @Override
-  public void afterInjection(Object injectee) {
-    new Reflector()
-        .forEachMethod(new PostConstructMethodInvoker())
-        .process(injectee);
+  public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+    for (Method method : type.getRawType().getDeclaredMethods())
+      if (method.isAnnotationPresent(PostConstruct.class))
+        encounter.register(new PostConstructInjectionListener());
   }
 
 }

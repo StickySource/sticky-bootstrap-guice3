@@ -1,4 +1,4 @@
-package net.stickycode.guice3.jsr250;
+package net.stickycode.bootstrap.guice3.jsr250;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

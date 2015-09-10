@@ -59,7 +59,7 @@ public class StickyModule
       util.removeHandler(handler);
     SLF4JBridgeHandler.install();
 
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug"));
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "true"));
     if (!tellMeWhatsGoingOn)
       LoggerFactory.getLogger(StickyModule.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
@@ -92,7 +92,7 @@ public class StickyModule
   }
 
   @SuppressWarnings({ "unchecked" })
-  private void bind(Class<Object> annotatedClass, FastClasspathScanner scanner) {
+  private void bind(Class<Object> annotatedClass, FastClasspathScanner s) {
 
     List<Class<?>> interfaces = collectInterfaces(annotatedClass);
 
