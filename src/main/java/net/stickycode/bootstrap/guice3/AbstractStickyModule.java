@@ -47,7 +47,7 @@ import net.stickycode.stereotype.StickyDomain;
 import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.StickyPlugin;
 
-public class StickyModule
+public abstract class AbstractStickyModule
     extends AbstractModule {
 
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -60,30 +60,18 @@ public class StickyModule
       util.removeHandler(handler);
     SLF4JBridgeHandler.install();
 
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "true"));
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
     if (!tellMeWhatsGoingOn)
-      LoggerFactory.getLogger(StickyModule.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
+      LoggerFactory.getLogger(AbstractStickyModule.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
 
   private FastClasspathScanner scanner;
 
-  public StickyModule(FastClasspathScanner scanner) {
+  public AbstractStickyModule(FastClasspathScanner scanner) {
     this.scanner = scanner;
   }
 
-  @Override
-  public void configure() {
-    List<String> framework = getFrameworkNames();
-    List<String> componentNames = getComponentNames();
-    framework.retainAll(componentNames);
-    debug("framework {}", framework);
-    load(framework);
-    componentNames.removeAll(framework);
-    debug("components {}", framework);
-    load(componentNames);
-  }
-
-  private void load(List<String> componentNames) {
+  protected void load(List<String> componentNames) {
     for (String name : componentNames) {
       @SuppressWarnings("rawtypes")
       Class k = scanner.loadClass(name);
@@ -154,7 +142,7 @@ public class StickyModule
         }
   }
 
-  private void debug(String message, Object... paraemeters) {
+  protected void debug(String message, Object... paraemeters) {
     if (tellMeWhatsGoingOn)
       log.debug(message, paraemeters);
   }

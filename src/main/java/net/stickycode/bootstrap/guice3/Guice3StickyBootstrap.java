@@ -34,6 +34,8 @@ public class Guice3StickyBootstrap
 
   private Object $lock = new Object();
 
+  private Injector parentInjector;
+
   @Override
   public StickyBootstrap scan(String... scan) {
     List<String> list = Arrays.asList(scan);
@@ -73,17 +75,17 @@ public class Guice3StickyBootstrap
       if (injector == null) {
         List<Module> m = new ArrayList<>();
 
+        m.add(new BootstrapMetadataModule(metadata));
+        m.addAll(modules);
         if (!packages.isEmpty()) {
           log.debug("scanning {}", packages);
           FastClasspathScanner scanner = new FastClasspathScanner(packages.toArray(new String[packages.size()])).scan();
-          StickyModule stickyModule = new StickyModule(scanner);
-          m.add(stickyModule);
+          parentInjector = Guice.createInjector(new StickyFrameworkModule(scanner));
+          m.add(new StickyApplicationModule(scanner));
+          this.injector = parentInjector.createChildInjector(m);
         }
-
-        m.add(new BootstrapMetadataModule(metadata));
-
-        m.addAll(modules);
-        this.injector = Guice.createInjector(m);
+        else
+          this.injector = Guice.createInjector(m);
       }
 
       return injector;
@@ -117,11 +119,16 @@ public class Guice3StickyBootstrap
 
   @Override
   public void shutdown() {
-    if (injector != null) {
-      Jsr250Module.preDestroy(log, injector);
+    shutdownInjector(injector);
+    shutdownInjector(parentInjector);
+  }
 
-      if (injector.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
-        injector.getInstance(StickySystemStartup.class).shutdown();
+  private void shutdownInjector(Injector i) {
+    if (i != null) {
+      Jsr250Module.preDestroy(log, i);
+
+      if (i.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
+        i.getInstance(StickySystemStartup.class).shutdown();
     }
   }
 

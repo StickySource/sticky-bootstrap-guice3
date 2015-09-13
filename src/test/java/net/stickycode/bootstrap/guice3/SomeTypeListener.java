@@ -1,5 +1,7 @@
 package net.stickycode.bootstrap.guice3;
 
+import static org.assertj.core.api.StrictAssertions.assertThat;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -11,8 +13,10 @@ import com.google.inject.spi.TypeListener;
 
 import net.stickycode.metadata.MetadataResolverRegistry;
 import net.stickycode.stereotype.StickyComponent;
+import net.stickycode.stereotype.StickyFramework;
 
 @StickyComponent
+@StickyFramework
 public class SomeTypeListener
     implements TypeListener {
 
@@ -23,7 +27,15 @@ public class SomeTypeListener
 
   @Override
   public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
-    log.debug("{} with {}", type, registry);
+    if (type.getRawType().isAnnotationPresent(StickyFramework.class))
+      return;
+
+    if (type.getRawType().getName().startsWith("com.google.inject"))
+      return;
+
+    assertThat(registry)
+        .as("Type listeners should have metadata resolvers and other framework things injected in the application injector")
+        .isNotNull();
   }
 
 }
