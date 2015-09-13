@@ -41,10 +41,10 @@ import com.google.inject.spi.TypeListener;
 import com.google.inject.util.Types;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import net.stickycode.bootstrap.ComponentContainer;
 import net.stickycode.reflector.Methods;
 import net.stickycode.stereotype.StickyComponent;
 import net.stickycode.stereotype.StickyDomain;
+import net.stickycode.stereotype.StickyFramework;
 import net.stickycode.stereotype.StickyPlugin;
 
 public class StickyModule
@@ -60,7 +60,7 @@ public class StickyModule
       util.removeHandler(handler);
     SLF4JBridgeHandler.install();
 
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "true"));
     if (!tellMeWhatsGoingOn)
       LoggerFactory.getLogger(StickyModule.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
@@ -71,18 +71,28 @@ public class StickyModule
     this.scanner = scanner;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public void configure() {
+    List<String> framework = getFrameworkNames();
+    List<String> componentNames = getComponentNames();
+    framework.retainAll(componentNames);
+    debug("framework {}", framework);
+    load(framework);
+    componentNames.removeAll(framework);
+    debug("components {}", framework);
+    load(componentNames);
+  }
 
-    binder().requireExplicitBindings();
-    binder().bind(ComponentContainer.class).to(Guice3ComponentContainer.class);
-
-    for (String name : getComponentNames()) {
+  private void load(List<String> componentNames) {
+    for (String name : componentNames) {
       @SuppressWarnings("rawtypes")
       Class k = scanner.loadClass(name);
       bind(k, scanner);
     }
+  }
+
+  List<String> getFrameworkNames() {
+    return scanner.getNamesOfClassesWithAnnotationsAnyOf(StickyFramework.class);
   }
 
   List<String> getComponentNames() {
@@ -99,7 +109,9 @@ public class StickyModule
       annotations.add(a.getName());
       annotations.addAll(scanner.getNamesOfAnnotationsWithMetaAnnotation(a));
     }
-    debug("Using component annotations {} note that you must scan the packages of all the meta annotated annotations to pick them all up. This especially true of net.stickycode.stereotype.", annotations);
+    debug(
+        "Using component annotations {} note that you must scan the packages of all the meta annotated annotations to pick them all up. This especially true of net.stickycode.stereotype.",
+        annotations);
   }
 
   @SuppressWarnings("rawtypes")

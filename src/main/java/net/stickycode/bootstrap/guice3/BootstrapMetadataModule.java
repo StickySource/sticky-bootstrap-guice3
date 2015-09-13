@@ -22,6 +22,8 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 
+import net.stickycode.bootstrap.ComponentContainer;
+
 public class BootstrapMetadataModule
     extends AbstractModule {
 
@@ -51,10 +53,17 @@ public class BootstrapMetadataModule
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   protected void configure() {
+    binder().requireExplicitBindings();
+    binder().bind(ComponentContainer.class).to(Guice3ComponentContainer.class);
+
+    // FIXME the binding should be the same as sticky module, not sure how to deal with scanning though as
+    // this class is all about NOT scanning
+
     for (final BeanHolder b : manifest.getBeans()) {
       TypeLiteral type = TypeLiteral.get(b.getType());
       log.debug("binding type '{}' to instance '{}'", type, b.getInstance());
       bind(type).toProvider(new InstanceProvider(b));
+      bindInterfaces(type, b, b.getType().getInterfaces());
     }
     for (Class type : manifest.getTypes()) {
       log.debug("binding type '{}'", type);
@@ -67,6 +76,16 @@ public class BootstrapMetadataModule
     for (Module module : manifest.getModules()) {
       log.debug("installing module '{}'", module);
       install(module);
+    }
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private void bindInterfaces(TypeLiteral type, BeanHolder b, Class<?>[] interfaces) {
+    log.debug("binding {} to {}", type, interfaces);
+    for (Class implemented : interfaces) {
+      Multibinder.newSetBinder(binder(), implemented).addBinding().toProvider(new InstanceProvider(b));
+      bind(implemented).toProvider(new InstanceProvider(b));
+      bindInterfaces(type, b, implemented.getInterfaces());
     }
   }
 
@@ -87,6 +106,7 @@ public class BootstrapMetadataModule
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private void bindInterfaces(Class type, Class[] interfaces) {
     for (Class implemented : interfaces) {
+      Multibinder.newSetBinder(binder(), implemented).addBinding().to(type);
       bind(implemented).to(type).in(Singleton.class);
       bindInterfaces(type, implemented.getInterfaces());
     }
