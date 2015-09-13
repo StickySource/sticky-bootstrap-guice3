@@ -10,7 +10,7 @@
 
 	<groupId>net.stickycode.bootstrap</groupId>
 	<artifactId>sticky-bootstrap-guice3</artifactId>
-	<version>5.3-SNAPSHOT</version>
+	<version>5.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>sticky-bootstrap-guice3-4</name>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>net.stickycode</groupId>
 			<artifactId>sticky-metadata-reflective</artifactId>
-			<version>[3,4)</version>
+			<version>[3.2,4)</version>
 		</dependency>
 		<dependency>
 			<groupId>net.stickycode</groupId>
@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>net.stickycode.bootstrap</groupId>
 			<artifactId>sticky-bootstrap-api</artifactId>
-			<version>[3.1,4)</version>
+			<version>[3.2,4)</version>
 		</dependency>
 
 	</dependencies>
