@@ -52,7 +52,6 @@ public abstract class AbstractStickyModule
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private static boolean tellMeWhatsGoingOn;
 
   static {
     java.util.logging.Logger util = LogManager.getLogManager().getLogger("");
@@ -60,9 +59,6 @@ public abstract class AbstractStickyModule
       util.removeHandler(handler);
     SLF4JBridgeHandler.install();
 
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
-    if (!tellMeWhatsGoingOn)
-      LoggerFactory.getLogger(AbstractStickyModule.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
 
   private FastClasspathScanner scanner;
@@ -84,7 +80,7 @@ public abstract class AbstractStickyModule
   }
 
   List<String> getComponentNames() {
-    if (tellMeWhatsGoingOn)
+    if (Guice3StickyBootstrap.tellMeWhatsGoingOn)
       debugComponentAnnotatationsThatAreBeingLookedFor();
 
     return scanner.getNamesOfClassesWithAnnotationsAnyOf(componentMetaAnnotations());
@@ -143,7 +139,7 @@ public abstract class AbstractStickyModule
   }
 
   protected void debug(String message, Object... paraemeters) {
-    if (tellMeWhatsGoingOn)
+    if (Guice3StickyBootstrap.tellMeWhatsGoingOn)
       log.debug(message, paraemeters);
   }
 

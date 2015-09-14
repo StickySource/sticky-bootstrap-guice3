@@ -17,12 +17,19 @@ import com.google.inject.ProvisionException;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import net.stickycode.bootstrap.StickyBootstrap;
 import net.stickycode.bootstrap.StickySystemStartup;
-import net.stickycode.bootstrap.guice3.jsr250.Jsr250Module;
 
 public class Guice3StickyBootstrap
     implements StickyBootstrap {
 
+  static Boolean tellMeWhatsGoingOn;
+
   private Logger log = LoggerFactory.getLogger(getClass());
+
+  static {
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
+    if (!tellMeWhatsGoingOn)
+      LoggerFactory.getLogger(Guice3StickyBootstrap.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
+  }
 
   private List<String> packages = new ArrayList<>();
 
@@ -119,16 +126,9 @@ public class Guice3StickyBootstrap
 
   @Override
   public void shutdown() {
-    shutdownInjector(injector);
-    shutdownInjector(parentInjector);
-  }
-
-  private void shutdownInjector(Injector i) {
-    if (i != null) {
-      Jsr250Module.preDestroy(log, i);
-
-      if (i.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
-        i.getInstance(StickySystemStartup.class).shutdown();
+    if (injector != null) {
+      if (injector.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
+        injector.getInstance(StickySystemStartup.class).shutdown();
     }
   }
 
@@ -142,6 +142,8 @@ public class Guice3StickyBootstrap
 
   @Override
   public void start() {
-    getInjector().getInstance(StickySystemStartup.class).start();
+    Injector i = getInjector();
+    if (i.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
+      i.getInstance(StickySystemStartup.class).start();
   }
 }

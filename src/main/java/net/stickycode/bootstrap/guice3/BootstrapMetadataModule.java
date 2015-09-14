@@ -27,6 +27,7 @@ import net.stickycode.bootstrap.ComponentContainer;
 public class BootstrapMetadataModule
     extends AbstractModule {
 
+  @SuppressWarnings("rawtypes")
   private final class InstanceProvider
       implements Provider {
 
@@ -50,6 +51,11 @@ public class BootstrapMetadataModule
     this.manifest = manifest;
   }
 
+  protected void debug(String message, Object... paraemeters) {
+    if (Guice3StickyBootstrap.tellMeWhatsGoingOn)
+      log.debug(message, paraemeters);
+  }
+
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   protected void configure() {
@@ -59,14 +65,16 @@ public class BootstrapMetadataModule
     // FIXME the binding should be the same as sticky module, not sure how to deal with scanning though as
     // this class is all about NOT scanning
 
+    debug("beans {}", manifest.getBeans());
     for (final BeanHolder b : manifest.getBeans()) {
       TypeLiteral type = TypeLiteral.get(b.getType());
-      log.debug("binding type '{}' to instance '{}'", type, b.getInstance());
+      debug("binding type '{}' to instance '{}'", type, b.getInstance());
       bind(type).toProvider(new InstanceProvider(b));
       bindInterfaces(type, b, b.getType().getInterfaces());
     }
+    debug("types {}", manifest.getTypes());
     for (Class type : manifest.getTypes()) {
-      log.debug("binding type '{}'", type);
+      debug("binding type '{}'", type);
       bind(type).in(Singleton.class);
       Multibinder.newSetBinder(binder(), type).addBinding().to(type);
       bindInterfaces(type, type.getInterfaces());
@@ -74,14 +82,14 @@ public class BootstrapMetadataModule
     }
 
     for (Module module : manifest.getModules()) {
-      log.debug("installing module '{}'", module);
+      debug("installing module '{}'", module);
       install(module);
     }
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private void bindInterfaces(TypeLiteral type, BeanHolder b, Class<?>[] interfaces) {
-    log.debug("binding {} to {}", type, interfaces);
+    debug("binding {} to {}", type, interfaces);
     for (Class implemented : interfaces) {
       Multibinder.newSetBinder(binder(), implemented).addBinding().toProvider(new InstanceProvider(b));
       bind(implemented).toProvider(new InstanceProvider(b));
@@ -92,7 +100,7 @@ public class BootstrapMetadataModule
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private void bindSuperType(Class type, Class superClass) {
     if (superClass != null && !superClass.equals(Object.class)) {
-      log.debug("binding type '{}'", type);
+      debug("binding type '{}'", type);
       bind(superClass).to(type).in(Singleton.class);
       Multibinder.newSetBinder(binder(), type).addBinding().to(type);
       bindInterfaces(type, superClass.getInterfaces());
