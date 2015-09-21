@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Provider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,7 @@ public class Guice3StickyBootstrap
   private Logger log = LoggerFactory.getLogger(getClass());
 
   static {
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "true"));
     if (!tellMeWhatsGoingOn)
       LoggerFactory.getLogger(Guice3StickyBootstrap.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
@@ -145,5 +147,10 @@ public class Guice3StickyBootstrap
     Injector i = getInjector();
     if (i.getExistingBinding(Key.get(StickySystemStartup.class)) != null)
       i.getInstance(StickySystemStartup.class).start();
+  }
+
+  @Override
+  public void registerProvider(String name, Provider<Object> provider, Class<?> type) {
+    metadata.registerProvider(name, provider, type);
   }
 }
