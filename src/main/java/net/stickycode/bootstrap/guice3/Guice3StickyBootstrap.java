@@ -28,7 +28,7 @@ public class Guice3StickyBootstrap
   private Logger log = LoggerFactory.getLogger(getClass());
 
   static {
-    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "true"));
+    tellMeWhatsGoingOn = new Boolean(System.getProperty("sticky.bootstrap.debug", "false"));
     if (!tellMeWhatsGoingOn)
       LoggerFactory.getLogger(Guice3StickyBootstrap.class).debug("Enable binding trace with -Dsticky.bootstrap.debug=true");
   }
